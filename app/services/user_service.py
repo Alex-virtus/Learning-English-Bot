@@ -1,24 +1,20 @@
-from app.database.db import get_session
-from app.database.models import User
+import json
+
+from app.database.db import SessionLocal
+from app.database.models import Users
 
 
 def get_or_create_user(telegram_id: int):
-    session = get_session()
-    try:
-        user = session.query(User).filter_by(telegram_id=telegram_id).first()
+    with SessionLocal() as session:
+        user = session.query(Users).filter_by(telegram_id=telegram_id).first()
         if not user:
             print(f"👤 Создание нового пользователя: {telegram_id}")
-            user = User(telegram_id=telegram_id)
+            user = Users(
+                telegram_id=telegram_id,
+                study_progress=json.dumps({"queue": [], "index": 0, "total": 0})
+            )
             session.add(user)
             session.commit()
             session.refresh(user)
-            print(f"✅ Пользователь создан id: {user.id}")
-
+            print(f"✅ Пользователь создан id: {user.user_id}")
         return user
-
-    except Exception as e:
-        print(f"❌ Ошибка в user_service для id {telegram_id}: {e}")
-        session.rollback()
-        return None
-    finally:
-        session.close()

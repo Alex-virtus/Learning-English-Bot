@@ -13,7 +13,7 @@ Telegram-бот для изучения и повторения английск
 - 🔙 **Удаление слов** — можно удалить отдельное слово или очистить весь словарь.  
 - 👤 **Персонализация** — у каждого пользователя своя база слов.  
 - 💾 **Работа с БД** — данные сохраняются в базе через SQLAlchemy.  
-
+- 📊 **Прогресс** — бот отслеживает, какие слова пользователь уже изучил, и показывает новые.
 
 ---
 
@@ -25,10 +25,13 @@ project/
 ├── app/
 │   ├── database/
 │   │   ├── db.py             # Подключение и сессии БД
-│   │   ├── models.py         # Таблицы: User, Word, UserWord
-│   │
+│   │   ├── models.py         # Таблицы: Users, Words, Users_words
+│   │   ├── config.py         # Настройки БД и Telegram токена
+│   │   └── init_db.py        # Инициализация БД
+│   │    
 │   ├── keyboards/
-│   │   └── main_menu.py      # Главное меню Telegram-бота
+│   │   ├── main_menu.py      # Главное меню Telegram-бота
+│   │   └── study_keyboard.py # Клавиатура для изучения слов
 │   │
 │   ├── services/
 │   │   ├── user_service.py   # Работа с пользователями
@@ -36,14 +39,14 @@ project/
 │   │   └── study_service.py  # Логика изучения слов
 │   │
 │   ├── handlers/
-│   │   ├── start_handler.py  # Команды /start и /help
-│   │   ├── add_word_handler.py
-│       └── delete_word_handler.py
+│   │   ├── start_handler.py        # Команды /start и /help
+│   │   ├── add_word_handler.py     # Добавление слов
+│   │   ├── delete_word_handler.py  # Удаление слов
+│       └── study_handler.py        # Изучение слов
 │      
-├── main.py  # Точка входа — запуск бота
-├── img
-├── requirements.txt
-├── README.md
+├── main.py             # Точка входа — запуск бота
+├── requirements.txt    # Зависимости
+├── README.md           # Документация проекта
 └── .gitignore
 ```
 
@@ -52,13 +55,13 @@ project/
 ## Структура базы данных
 
 **База данных содержит три таблицы:**
-1. **users** — пользователи Telegram  
-2. **words** — базовые слова  
-3. **user_words** — пользовательские слова  
+1. **users** — пользователи Telegram
+2. **words** — английские слова (базовые и пользовательские)
+3. **users_words** — связи пользователей с их словами (many-to-many)  
 
 **Схема базы данных:**
 
-![](img/database_schema.png)
+![](database_schema.png)
 
 ---
 
@@ -89,7 +92,7 @@ TG_TOKEN=ваш_токен_бота
 DB_USER=имя_сервера
 DB_PASSWORD=пароль_сервера
 DB_HOST=адрес_сервера
-DB_PORT=номер_входа_на_сервер 
+DB_PORT=порт_БД 
 DB_NAME=имя_базы_данных
 ```
 

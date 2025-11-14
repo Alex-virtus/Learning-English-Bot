@@ -1,35 +1,32 @@
-from sqlalchemy import (Column, Integer, BigInteger, String, ForeignKey,
-                        UniqueConstraint)
+from sqlalchemy import (Column, Integer, String, Boolean, ForeignKey,
+                        BigInteger)
 from sqlalchemy.orm import relationship
 
 from app.database.db import Base
 
 
-class User(Base):
+class Users(Base):
     __tablename__ = 'users'
-
-    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, primary_key=True)
     telegram_id = Column(BigInteger, unique=True, nullable=False)
-    words = relationship('UserWord', back_populates='user',
-                         cascade='all, delete-orphan')
+    study_progress = Column(String, default=None)
+    words = relationship('Users_words', back_populates='users')
 
 
-class Word(Base):
+class Words(Base):
     __tablename__ = 'words'
+    word_id = Column(Integer, primary_key=True)
+    eng_word = Column(String(40), nullable=False)
+    rus_word = Column(String(40), nullable=False)
+    common_word = Column(Boolean, nullable=False)
+    users = relationship('Users_words', back_populates='words')
 
-    id = Column(Integer, primary_key=True)
-    english = Column(String, unique=True, nullable=False)
-    russian = Column(String, nullable=False)
 
-
-class UserWord(Base):
-    __tablename__ = 'user_words'
-
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
-    english = Column(String, nullable=False)
-    russian = Column(String, nullable=False)
-    user = relationship('User', back_populates='words')
-
-    __table_args__ = (UniqueConstraint('user_id', 'english',
-                                       name='_user_word_uc'),)
+class Users_words(Base):
+    __tablename__ = 'users_words'
+    user_id = Column(Integer, ForeignKey('users.user_id', ondelete="CASCADE"),
+                     primary_key=True)
+    word_id = Column(Integer, ForeignKey('words.word_id', ondelete="CASCADE"),
+                     primary_key=True)
+    words = relationship('Words', back_populates='users')
+    users = relationship('Users', back_populates='words')
